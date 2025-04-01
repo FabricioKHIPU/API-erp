@@ -1,0 +1,68 @@
+name: CI/CD API NestJS
+
+on:
+  push:
+    branches:
+      - develop
+      # - main
+  # pull_request:
+  #   branches:
+  #     - develop
+  #     - main
+
+jobs:
+  automathized-nestjs-commercial:
+    runs-on: ubuntu-latest
+
+    # strategy:
+    #   matrix:
+    #     node-version: [16.x, 18.x, 20.x, 22.x]
+
+    steps:
+      # 1. Sacar la hora
+      - name: Get date
+        run: echo "Today is $(date)"
+
+      # 2. Se clona el repositorio
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      # 3. Se instala Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: npm
+
+      # 4. Se visualiza el directorio
+      - name: show directory
+        run: ls -la
+
+      # 5. Se instalan las dependencias
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      # 6. Se validan los ti
+      - name: Validate types
+        run: npm run build
+
+      # # 7. Aquí se ejecutan las pruebas
+      - name: Run tests
+        run: npm run test
+
+      # # 8. Aquí se ejecuta el coverage
+      - name: Run coverage
+        run: npm run test:cov
+
+      # 9. Aquí se verifica la conexión a la base de datos y redis
+      - name: Wait services
+        run: echo "Waiting for postgres to be ready..."
+          until pg_isready -h ${{ secrets.POSTGRES_HOST }} -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }}; do sleep 1; done echo "PostgreSQL está listo"
+
+          echo "Waiting for Mysql to be ready..."
+          until mysqladmin ping -h ${{ secrets.MYSQL_HOST }} -u ${{ secrets.MYSQL_USER }} -p${{ secrets.MYSQL_PASSWORD }}; do sleep 1; done echo "Mysql está listo"
+
+          echo "Waiting for Redis to be ready..."
+          until redis-cli -h ${{ secrets.REDIS_HOST }} -p ${{ secrets.REDIS_PORT }} ping; do sleep 1; done echo "Redis está listo"
+
+      # 10. S
