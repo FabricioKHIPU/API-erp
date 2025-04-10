@@ -6,8 +6,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import mysqlConfig from './config/database.config';
 import { RedisModule } from './infrastructure/redis/redis.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ChangesModule } from './modules/changes/changes.module';
-
+import { LotModule } from './modules/lot/lot.module';
+import { HttpModule } from '@nestjs/axios';
+import { AuthModule } from './infrastructure/auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -22,7 +23,9 @@ import { ChangesModule } from './modules/changes/changes.module';
     }),
     RedisModule,
     ScheduleModule.forRoot(),
-    ChangesModule,
+    LotModule,
+    HttpModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
